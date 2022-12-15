@@ -1,0 +1,44 @@
+• Когда мы перетащили файлы с произведением Льва Толстого – мы перетащили их в файловую систему виртуальной машины, но не в HDFS, соответственно, в первую очередь нам нужно перенести их в папку нашего пользователя именно на HDFS.
+hadoop fs -mkdir /user/hadoop
+hadoop fs -mkdir /user/hadoop/vimbook
+hadoop fs -put /home/cloudera/Downloads/*.* /user/hadoop/vimbook
+
+• После того, как файлы окажутся на HDFS попробуйте выполнить команду, которая выводит содержимое папки. Особенно обратите внимание на права доступа к вашим файлам.
+hadoop fs -ls /user/hadoop/vimbook
+
+Found 4 items
+-rw-r--r--   1 cloudera supergroup     736519 2022-12-09 04:28 /user/hadoop/vimbook/vim1.txt
+-rw-r--r--   1 cloudera supergroup     770324 2022-12-09 04:28 /user/hadoop/vimbook/vim2.txt
+-rw-r--r--   1 cloudera supergroup     843205 2022-12-09 04:28 /user/hadoop/vimbook/vim3.txt
+-rw-r--r--   1 cloudera supergroup     697960 2022-12-09 04:28 /user/hadoop/vimbook/vim4.txt
+
+• Далее сожмите все 4 тома в 1 файл.
+hadoop fs -getmerge -nl /user/hadoop/vimbook/ /home/cloudera/Downloads/vim.txt
+hadoop fs -put /home/cloudera/Downloads/vim.txt /user/hadoop/vimbook/vim.txt
+
+• Теперь давайте изменим права доступа к нашему файлу. Чтобы с нашим файлом могли взаимодействовать коллеги, установите режим доступа, который дает полный доступ для владельца файла, а для сторонних пользователей возможность читать и выполнять.
+hadoop fs -ls /user/hadoop/vimbook/vim.txt
+-rw-r--r--   1 cloudera supergroup    3048012 2022-12-09 06:06 /user/hadoop/vimbook/vim.txt
+hadoop fs -chmod 764 /user/hadoop/vimbook/vim.txt
+
+• Попробуйте заново использовать команду для вывода содержимого папки и обратите внимание как изменились права доступа к файлу.
+hadoop fs -ls /user/hadoop/vimbook/vim.txt
+-rwxrw-r--   1 cloudera supergroup    3048012 2022-12-09 06:06 /user/hadoop/vimbook/vim.txt
+
+• Вывод на экран информации о том, сколько места на диске занимает файл. 
+	
+	hadoop fs -du -h /user/hadoop/vimbook/vim.txt
+	2.9 M  2.9 M  /user/hadoop/vimbook/vim.txt
+
+• Изменение фактора репликации на 2.
+
+	hadoop fs -setrep -w 2 /user/hadoop/vimbook/vim.txt
+
+• Вывод информации о том, какое место на диске занимает файл (изменения произошли).
+
+	hadoop fs -du -h /user/hadoop/vimbook/vim.txt
+	2.9 M  2.9 M  /user/hadoop/vimbook/vim.txt
+
+• Подсчет количества строк в файле
+	hadoop fs -cat /user/hadoop/vimbook/vim.txt | wc -l
+	10276
